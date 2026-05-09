@@ -32,6 +32,7 @@ function App() {
   const closeModal = () => {
     setSelectedMovie(null);
   };
+  const results = data?.results ?? [];
   const totalPages = data?.total_pages ?? 0;
 
   return (
@@ -47,17 +48,14 @@ function App() {
       {isSuccess && totalPages > 1 && (
         <Pagination totalPages={totalPages} page={page} setPage={setPage} />
       )}
-      {!isLoading &&
-        !isError &&
-        data?.results?.length > 0 &&
-        data?.results?.length !== undefined && (
-          <MovieGrid
-            movies={data?.results || []}
-            onSelect={(movie) => {
-              setSelectedMovie(movie);
-            }}
-          />
-        )}
+      {!isLoading && !isError && results.length > 0 && (
+        <MovieGrid
+          movies={results || []}
+          onSelect={(movie) => {
+            setSelectedMovie(movie);
+          }}
+        />
+      )}
       <Toaster position="top-center" reverseOrder={false} />
       {selectedMovie && (
         <MovieModal onClose={closeModal} movie={selectedMovie} />
