@@ -47,14 +47,17 @@ function App() {
       {isSuccess && totalPages > 1 && (
         <Pagination totalPages={totalPages} page={page} setPage={setPage} />
       )}
-      {!isLoading && !isError && data?.results?.length > 0 && (
-        <MovieGrid
-          movies={data?.results || []}
-          onSelect={(movie) => {
-            setSelectedMovie(movie);
-          }}
-        />
-      )}
+      {!isLoading &&
+        !isError &&
+        data?.results?.length > 0 &&
+        data?.results?.length !== undefined && (
+          <MovieGrid
+            movies={data?.results || []}
+            onSelect={(movie) => {
+              setSelectedMovie(movie);
+            }}
+          />
+        )}
       <Toaster position="top-center" reverseOrder={false} />
       {selectedMovie && (
         <MovieModal onClose={closeModal} movie={selectedMovie} />
