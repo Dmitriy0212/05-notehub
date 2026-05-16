@@ -1,64 +1,91 @@
 import "modern-normalize";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import css from "./App.module.css";
-import SearchBar from "../SearchBar/SearchBar";
-import { movieService } from "../../services/movieService";
-import { useEffect, useState } from "react";
-import type { Movie } from "../../types/movie";
-import MovieGrid from "../MovieGrid/MovieGrid";
-import { Toaster } from "react-hot-toast";
-import { notifyNoMovies } from "../../services/toast";
-import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
-import Pagination from "../ReactPaginate/ReactPaginate";
-
+import Pagination from "../Pagination/Pagination";
+import SearchBox from "../SearchBox/SearchBox";
+import Modal from "../Modal/Modal";
+import { useState, useEffect } from "react";
+import { fetchNotes } from "../../services/notesService";
+import { createNote } from "../../services/notesService";
+import NoteList from "../NoteList/NoteList";
+import { useDebouncedCallback } from "use-debounce";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 function App() {
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [createNoteThis, setCreateNoteThis] = useState(false);
+  const [input, setInput] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, isSuccess } = useQuery({
-    queryKey: ["movies", query, page],
+  const debouncedSetQuery = useDebouncedCallback((value: string) => {
+    setQuery(value);
+  }, 500);
 
-    queryFn: () => movieService(query, page),
-    enabled: query !== "",
+  const { data, isLoading, isError, isSuccess } = useQuery({
+    queryKey: ["notes", page, query],
+    queryFn: () =>
+      fetchNotes({
+        page,
+        search: query || undefined,
+        perPage: 12,
+      }),
     placeholderData: keepPreviousData,
   });
-  useEffect(() => {
-    if (data?.results && data.results.length === 0) {
-      notifyNoMovies();
-    }
-  }, [data]);
-  const closeModal = () => {
-    setSelectedMovie(null);
-  };
-  const results = data?.results ?? [];
-  const totalPages = data?.total_pages ?? 0;
 
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createNote,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+  const handleCreateNote = (noteData: {
+    title: string;
+    content: string;
+    tag: string;
+  }) => {
+    mutation.mutate(noteData);
+  };
+  const openModal = () => {
+    setCreateNoteThis(true);
+  };
+
+  const closeModal = () => {
+    setCreateNoteThis(false);
+  };
+  const totalPages = data?.totalPages ?? 0;
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
   return (
     <div className={css.app}>
-      <SearchBar
-        onSubmit={(q) => {
-          setQuery(q);
-          setPage(1);
-        }}
-      />
-      {isLoading && <Loader />}
-      {isError && <ErrorMessage />}
-      {isSuccess && totalPages > 1 && (
-        <Pagination totalPages={totalPages} page={page} setPage={setPage} />
-      )}
-      {!isLoading && !isError && results.length > 0 && (
-        <MovieGrid
-          movies={results || []}
-          onSelect={(movie) => {
-            setSelectedMovie(movie);
+      <header className={css.toolbar}>
+        <SearchBox
+          value={input}
+          onChange={(val) => {
+            setInput(val);
+            debouncedSetQuery(val);
           }}
         />
-      )}
-      <Toaster position="top-center" reverseOrder={false} />
-      {selectedMovie && (
-        <MovieModal onClose={closeModal} movie={selectedMovie} />
+
+        {isSuccess && totalPages > 1 && (
+          <Pagination totalPages={totalPages} page={page} setPage={setPage} />
+        )}
+        <button className={css.button} onClick={openModal}>
+          Create note +
+        </button>
+      </header>
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
+      {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+      {createNoteThis && (
+        <Modal
+          onClose={closeModal}
+          onSubmit={handleCreateNote}
+          isLoading={mutation.isPending}
+        />
       )}
     </div>
   );
