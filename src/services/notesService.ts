@@ -11,7 +11,11 @@ interface NotesResponse {
   notes: Note[];
   totalPages: number;
 }
-
+interface CreateNoteDto {
+  title: string;
+  content: string;
+  tag: string;
+}
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 const api = axios.create({
@@ -30,7 +34,7 @@ export const fetchNotes = async (
 
   return data;
 };
-export const createNote = async (note): Promise<Note> => {
+export const createNote = async (note: CreateNoteDto): Promise<Note> => {
   const { data } = await api.post<Note>("/notes", note);
   return data;
 };
