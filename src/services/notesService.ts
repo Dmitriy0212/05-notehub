@@ -16,12 +16,12 @@ interface CreateNoteDto {
   content: string;
   tag: string;
 }
-const API_KEY = import.meta.env.VITE_API_KEY;
+const VITE_API_KEY = import.meta.env.VITE_API_KEY;
 
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
   headers: {
-    Authorization: `Bearer ${API_KEY}`,
+    Authorization: `Bearer ${VITE_API_KEY}`,
   },
 });
 
