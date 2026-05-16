@@ -9,6 +9,7 @@ import Modal from "../Modal/Modal";
 import { useState, useEffect } from "react";
 import { fetchNotes } from "../../services/notesService";
 import { createNote } from "../../services/notesService";
+import { deleteNote } from "../../services/notesService";
 import NoteList from "../NoteList/NoteList";
 import { useDebouncedCallback } from "use-debounce";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,12 +42,23 @@ function App() {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
   });
+  const mutationsec = useMutation({
+    mutationFn: deleteNote,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
   const handleCreateNote = (noteData: {
     title: string;
     content: string;
     tag: string;
   }) => {
     mutation.mutate(noteData);
+  };
+
+  const handleDeleteNote = (noteDataD: string) => {
+    mutationsec.mutate(noteDataD);
   };
   const openModal = () => {
     setCreateNoteThis(true);
@@ -79,7 +91,9 @@ function App() {
       </header>
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
+      {isSuccess && data.notes.length > 0 && (
+        <NoteList notes={data.notes} onDelete={handleDeleteNote} />
+      )}
       {createNoteThis && (
         <Modal
           onClose={closeModal}

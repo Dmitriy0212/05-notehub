@@ -38,3 +38,6 @@ export const createNote = async (note: CreateNoteDto): Promise<Note> => {
   const { data } = await api.post<Note>("/notes", note);
   return data;
 };
+export const deleteNote = async (id: string): Promise<void> => {
+  await api.delete(`/notes/${id}`);
+};
