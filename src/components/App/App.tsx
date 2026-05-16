@@ -57,8 +57,8 @@ function App() {
     mutation.mutate(noteData);
   };
 
-  const handleDeleteNote = (noteDataD: string) => {
-    mutationsec.mutate(noteDataD);
+  const handleDeleteNote = (noteData: string) => {
+    mutationsec.mutate(noteData);
   };
   const openModal = () => {
     setCreateNoteThis(true);
