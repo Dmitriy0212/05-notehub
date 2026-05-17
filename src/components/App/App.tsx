@@ -8,11 +8,8 @@ import SearchBox from "../SearchBox/SearchBox";
 import Modal from "../Modal/Modal";
 import { useState, useEffect } from "react";
 import { fetchNotes } from "../../services/noteService";
-import { createNote } from "../../services/noteService";
-import { deleteNote } from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import { useDebouncedCallback } from "use-debounce";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { notifyNoNote } from "../../services/toast";
 function App() {
@@ -35,19 +32,6 @@ function App() {
     setQuery(value);
   }, 500);
 
-  const queryClient = useQueryClient();
-
-  const mutationsec = useMutation({
-    mutationFn: deleteNote,
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-  });
-
-  const handleDeleteNote = (noteData: string) => {
-    mutationsec.mutate(noteData);
-  };
   const openModal = () => {
     setCreateNoteThis(true);
   };
@@ -85,7 +69,7 @@ function App() {
       {(isLoading || isFetching) && <Loader />}
       {isError && <ErrorMessage />}
       {!isLoading && !isFetching && isSuccess && data.notes.length > 0 && (
-        <NoteList notes={data.notes} onDelete={handleDeleteNote} />
+        <NoteList notes={data.notes} />
       )}
       <Toaster position="top-center" reverseOrder={false} />
       {createNoteThis && <Modal onClose={closeModal} />}
