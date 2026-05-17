@@ -6,17 +6,20 @@ import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import Pagination from "../Pagination/Pagination";
 import SearchBox from "../SearchBox/SearchBox";
 import Modal from "../Modal/Modal";
+import NoteForm from "../NoteForm/NoteForm";
 import { useState, useEffect } from "react";
 import { fetchNotes } from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import { useDebouncedCallback } from "use-debounce";
 import { Toaster } from "react-hot-toast";
 import { notifyNoNote } from "../../services/toast";
+
 function App() {
   const [createNoteThis, setCreateNoteThis] = useState(false);
   const [input, setInput] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+
   const { data, isLoading, isError, isSuccess, isFetching } = useQuery({
     queryKey: ["notes", page, query],
     queryFn: () =>
@@ -35,18 +38,23 @@ function App() {
   const openModal = () => {
     setCreateNoteThis(true);
   };
+
+  const closeModal = () => {
+    setCreateNoteThis(false);
+  };
+
   useEffect(() => {
     if (data?.notes && data.notes.length === 0) {
       notifyNoNote();
     }
   }, [data]);
-  const closeModal = () => {
-    setCreateNoteThis(false);
-  };
-  const totalPages = data?.totalPages ?? 0;
+
   useEffect(() => {
     setPage(1);
   }, [query]);
+
+  const totalPages = data?.totalPages ?? 0;
+
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
@@ -61,6 +69,7 @@ function App() {
         {isSuccess && totalPages > 1 && (
           <Pagination totalPages={totalPages} page={page} setPage={setPage} />
         )}
+
         <button className={css.button} onClick={openModal}>
           Create note +
         </button>
@@ -68,11 +77,18 @@ function App() {
 
       {(isLoading || isFetching) && <Loader />}
       {isError && <ErrorMessage />}
+
       {!isLoading && !isFetching && isSuccess && data.notes.length > 0 && (
         <NoteList notes={data.notes} />
       )}
+
       <Toaster position="top-center" reverseOrder={false} />
-      {createNoteThis && <Modal onClose={closeModal} />}
+
+      {createNoteThis && (
+        <Modal onClose={closeModal}>
+          <NoteForm onClose={closeModal} />
+        </Modal>
+      )}
     </div>
   );
 }
