@@ -5,17 +5,10 @@ import { useEffect } from "react";
 
 interface ModalProps {
   onClose: () => void;
-
-  onSubmit?: (noteData: {
-    title: string;
-    content: string;
-    tag: string;
-  }) => void;
-
   isLoading?: boolean;
 }
 
-export default function Modal({ onClose, onSubmit, isLoading }: ModalProps) {
+export default function Modal({ onClose, isLoading }: ModalProps) {
   const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -46,7 +39,7 @@ export default function Modal({ onClose, onSubmit, isLoading }: ModalProps) {
       aria-modal="true"
     >
       <div className={css.modal}>
-        <NoteForm onClose={onClose} onSubmit={onSubmit} isLoading={isLoading} />
+        <NoteForm onClose={onClose} />
       </div>
     </div>,
     document.body

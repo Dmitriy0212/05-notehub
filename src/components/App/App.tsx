@@ -37,13 +37,6 @@ function App() {
 
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
-    mutationFn: createNote,
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-  });
   const mutationsec = useMutation({
     mutationFn: deleteNote,
 
@@ -51,13 +44,6 @@ function App() {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
   });
-  const handleCreateNote = (noteData: {
-    title: string;
-    content: string;
-    tag: string;
-  }) => {
-    mutation.mutate(noteData);
-  };
 
   const handleDeleteNote = (noteData: string) => {
     mutationsec.mutate(noteData);
@@ -102,13 +88,7 @@ function App() {
         <NoteList notes={data.notes} onDelete={handleDeleteNote} />
       )}
       <Toaster position="top-center" reverseOrder={false} />
-      {createNoteThis && (
-        <Modal
-          onClose={closeModal}
-          onSubmit={handleCreateNote}
-          isLoading={mutation.isPending}
-        />
-      )}
+      {createNoteThis && <Modal onClose={closeModal} />}
     </div>
   );
 }

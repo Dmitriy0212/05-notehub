@@ -16,12 +16,12 @@ interface CreateNoteDto {
   content: string;
   tag: string;
 }
-const VITE_API_KEY = import.meta.env.VITE_API_KEY;
+const VITE_NOTEHUB_TOKEN = import.meta.env.VITE_NOTEHUB_TOKEN;
 
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
   headers: {
-    Authorization: `Bearer ${VITE_API_KEY}`,
+    Authorization: `Bearer ${VITE_NOTEHUB_TOKEN}`,
   },
 });
 
@@ -38,6 +38,7 @@ export const createNote = async (note: CreateNoteDto): Promise<Note> => {
   const { data } = await api.post<Note>("/notes", note);
   return data;
 };
-export const deleteNote = async (id: string): Promise<void> => {
-  await api.delete(`/notes/${id}`);
+export const deleteNote = async (id: string): Promise<Note> => {
+  const { data } = await api.delete<Note>(`/notes/${id}`);
+  return data;
 };
