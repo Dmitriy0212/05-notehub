@@ -1,6 +1,7 @@
 import css from "./NoteForm.module.css";
-import { Formik, Form, Field, type FormikHelpers } from "formik";
+import { Formik, Form, Field, type FormikHelpers, ErrorMessage } from "formik";
 import { useId } from "react";
+import * as Yup from "yup";
 
 interface OrderFormValues {
   title: string;
@@ -25,6 +26,12 @@ const initialValues: OrderFormValues = {
   content: "",
   tag: "Todo",
 };
+const OrderFormSchema = Yup.object().shape({
+  title: Yup.string()
+    .min(2, "Title must be at least 2 characters")
+    .max(30, "Title is too long")
+    .required("Title is required"),
+});
 
 export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
   const baseId = useId();
@@ -44,7 +51,11 @@ export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
   };
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={OrderFormSchema}
+      onSubmit={handleSubmit}
+    >
       <Form className={css.form}>
         <div className={css.formGroup}>
           <label htmlFor={`${baseId}-title`}>Title</label>
@@ -54,6 +65,7 @@ export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
             name="title"
             className={css.input}
           />
+          <ErrorMessage name="title" component="span" className={css.error} />
         </div>
 
         <div className={css.formGroup}>
@@ -65,6 +77,7 @@ export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
             rows={8}
             className={css.textarea}
           />
+          <ErrorMessage name="content" component="span" className={css.error} />
         </div>
 
         <div className={css.formGroup}>

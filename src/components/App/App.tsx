@@ -13,16 +13,14 @@ import { deleteNote } from "../../services/notesService";
 import NoteList from "../NoteList/NoteList";
 import { useDebouncedCallback } from "use-debounce";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
+import { notifyNoNote } from "../../services/toast";
 function App() {
   const [createNoteThis, setCreateNoteThis] = useState(false);
   const [input, setInput] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const debouncedSetQuery = useDebouncedCallback((value: string) => {
-    setQuery(value);
-  }, 500);
-
-  const { data, isLoading, isError, isSuccess } = useQuery({
+  const { data, isLoading, isError, isSuccess, isFetching } = useQuery({
     queryKey: ["notes", page, query],
     queryFn: () =>
       fetchNotes({
@@ -32,6 +30,10 @@ function App() {
       }),
     placeholderData: keepPreviousData,
   });
+
+  const debouncedSetQuery = useDebouncedCallback((value: string) => {
+    setQuery(value);
+  }, 500);
 
   const queryClient = useQueryClient();
 
@@ -63,7 +65,11 @@ function App() {
   const openModal = () => {
     setCreateNoteThis(true);
   };
-
+  useEffect(() => {
+    if (data?.notes && data.notes.length === 0) {
+      notifyNoNote();
+    }
+  }, [data]);
   const closeModal = () => {
     setCreateNoteThis(false);
   };
@@ -89,11 +95,13 @@ function App() {
           Create note +
         </button>
       </header>
-      {isLoading && <Loader />}
+
+      {(isLoading || isFetching) && <Loader />}
       {isError && <ErrorMessage />}
-      {isSuccess && data.notes.length > 0 && (
+      {!isLoading && !isFetching && isSuccess && data.notes.length > 0 && (
         <NoteList notes={data.notes} onDelete={handleDeleteNote} />
       )}
+      <Toaster position="top-center" reverseOrder={false} />
       {createNoteThis && (
         <Modal
           onClose={closeModal}
